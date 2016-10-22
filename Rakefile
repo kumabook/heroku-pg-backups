@@ -1,5 +1,7 @@
 require "pgbackups-archive"
 
 task :default do
-  puts 'Please run `rake pgbackups:archive`'
+  puts 'pg backups and upload it to s3'
+  PgbackupsArchive::Job.call
+  puts 'completed!'
 end
