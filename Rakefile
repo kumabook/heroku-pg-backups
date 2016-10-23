@@ -3,8 +3,15 @@ require "faraday"
 require "uri"
 
 task :default do
+  time = Time.now.strftime('%Y-%m-%d %H:%M:%S')
   puts 'pg backups and upload it to s3'
+  notify_slack "Start archving backup: #{time}"
   PgbackupsArchive::Job.call
+  notify_slack "Successfully archiving backup and save it on s3: #{time}"
+  puts 'completed!'
+end
+
+def notify_slack(text)
   uri = URI.parse(ENV["SLACK_URL"])
   conn = Faraday.new(:url => "#{uri.scheme}://#{uri.host}") do |faraday|
     faraday.request  :url_encoded
@@ -15,9 +22,7 @@ task :default do
   conn.post do |req|
     req.url uri.path
     req.headers['Content-Type'] = 'application/json'
-    text     = "Successfully backup and save it on s3: #{Time.now.strftime('%Y-%m-%d %H:%M:%S')}"
     req.body = "{ \"text\": \"#{text}\" }"
   end
 
-  puts 'completed!'
 end
