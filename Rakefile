@@ -3,12 +3,18 @@ require "faraday"
 require "uri"
 
 task :default do
-  time = Time.now.strftime('%Y-%m-%d %H:%M:%S')
-  puts 'pg backups and upload it to s3'
-  notify_slack "Start archving backup: #{time}"
-  PgbackupsArchive::Job.call
-  notify_slack "Successfully archiving backup and save it on s3: #{time}"
-  puts 'completed!'
+  begin
+    time = Time.now.strftime('%Y-%m-%d %H:%M:%S')
+    puts 'pg backups and upload it to s3'
+    notify_slack "Start archving backup: #{time}"
+    PgbackupsArchive::Job.call
+    notify_slack "Successfully archiving backup and save it on s3: #{time}"
+    puts 'completed!'
+  rescue => e
+    puts "Failed to backup"
+    notify_slack("Failed to backup")
+    p e
+  end
 end
 
 def notify_slack(text)
